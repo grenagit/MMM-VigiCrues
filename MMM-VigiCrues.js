@@ -21,6 +21,9 @@ Module.register("MMM-VigiCrues",{
 		maxChartWidth: 0,
 		maxChartHeight: 0,
 		useColorLegend: true,
+		showChart: true,
+
+		alertTable: [],
 
 		initialLoadDelay: 0, // 0 seconds delay
 		retryDelay: 2500, // 2,5 seconds
@@ -36,7 +39,7 @@ Module.register("MMM-VigiCrues",{
 
 	// Define required scripts
 	getStyles: function() {
-		return ["font-awesome.css"];
+		return ["font-awesome.css", "MMM-VigiCrues.css"];
 	},
 
 	// Define start sequence
@@ -45,11 +48,13 @@ Module.register("MMM-VigiCrues",{
 
 		moment.locale(config.language);
 
-		this.title = null;
-		this.description = null;
-		this.copyright = null;
-		this.type = null;
-		this.url = null;
+		this.levelCurrent = null;
+		this.alertColor = null;
+		this.average = null;
+		this.minimum = null;
+		this.maximum = null;
+		this.comparison = null;
+
 		this.loaded = false;
 		this.scheduleUpdate(this.config.initialLoadDelay);
 	},
@@ -71,13 +76,15 @@ Module.register("MMM-VigiCrues",{
 		}
 
 		var medium = document.createElement("div");
-		medium.className = "normal medium";
+		medium.className = "normal medium level";
 
 		var levelIcon = document.createElement('span');
 
-		levelIcon.className = "fas fa-ruler-vertical dimmed";
-		if (this.config.useColorLegend && false) {
-			levelIcon.style = "color: " + this.level2color(this.vigiWeatherLevel) + ";";
+		if (this.config.useColorLegend && this.alertColor != null) {
+			levelIcon.className = "fas fa-exclamation-triangle dimmed";
+			levelIcon.style = "color: " + this.alertColor + ";";
+		} else {
+			levelIcon.className = "fas fa-ruler-vertical dimmed";
 		}
 		medium.appendChild(levelIcon);
 
@@ -86,6 +93,7 @@ Module.register("MMM-VigiCrues",{
 		medium.appendChild(spacer);
 
 		var levelValue = document.createElement("span");
+		levelValue.className = "bright";
 		levelValue.innerHTML = this.levelCurrent + "<span class=\"xsmall\">m</span>";;
 		medium.appendChild(levelValue);
 
@@ -111,6 +119,7 @@ Module.register("MMM-VigiCrues",{
 		medium.appendChild(spacer);
 
 		var levelValue = document.createElement("span");
+		levelValue.className = "bright";
 		levelValue.innerHTML = this.comparison + "<span class=\"xsmall\">m</span>";;
 		medium.appendChild(levelValue);
 
@@ -118,7 +127,7 @@ Module.register("MMM-VigiCrues",{
 
 
 		var small = document.createElement("div");
-		small.className = "normal small";
+		small.className = "normal small comparison";
 
 		var levelStats = document.createElement("span");
 		levelStats.innerHTML = "Sur 30 jours :";
@@ -151,78 +160,98 @@ Module.register("MMM-VigiCrues",{
 
 		wrapper.appendChild(small);
 
-		var history = document.createElement("canvas");
-		new Chart(history, {
-			type: 'line',
-			data: {
-				datasets: [
-					{ 
-				    data: this.chartData,
-						borderColor: "#999",
-				    fill: true,
-						pointRadius: 0,
-						borderWidth: 2
-				  }
-				]
-			},
-			options: {
-				legend: {
-				  display: false,
+		if(this.config.showChart) {
+			var chartWrapper = document.createElement("div");
+
+			var history = document.createElement("canvas");
+			var chart = new Chart(history, {
+				type: 'line',
+				data: {
+					datasets: [
+						{
+							label: "Hauteur d'eau",
+						  data: this.chartData,
+							backgroundColor: "#666",
+							borderColor: "#999",
+							borderWidth: 2,
+						  fill: true,
+							pointRadius: 0,
+						}
+					]
 				},
-				scales: {
-					yAxes: [{
+				options: {
+					maintainAspectRatio: false,
+					legend: {
 						display: true,
-						ticks: {
-							maxTicksLimit: 6,
-							min: 0,
-							padding: 5,
-						},
-						scaleLabel: {
+						position: "bottom",
+					},
+					scales: {
+						yAxes: [{
 							display: true,
-							labelString: "Hauteur (m)",
-						},
-						gridLines: {
-        			color: "#666",
-							drawOnChartArea: false,
-    				}
-					}],
-					xAxes: [{
-						display: true,
-            type: 'time',
+							ticks: {
+								maxTicksLimit: 6,
+								min: 0,
+								padding: 5,
+							},
+							scaleLabel: {
+								display: true,
+								labelString: "Hauteur (m)",
+							},
+							gridLines: {
+		      			color: "#999",
+								drawOnChartArea: false,
+		  				}
+						}],
+						xAxes: [{
+							display: true,
+		          type: 'time',
 
-						ticks: {
-							maxTicksLimit: 6,
-							padding: 5,
-						},
-						time: {
-							displayFormats: {
-								hour: "DD/MM HH:mm",
-								day: "DD/MM",
-								week: "DD/MM",
-								month: "MMM YY",
-							}
-						},
-						gridLines: {
-        			color: "#666",
-							drawOnChartArea: false,
-    				}
-					}]
+							ticks: {
+								maxTicksLimit: 6,
+								padding: 5,
+							},
+							time: {
+								displayFormats: {
+									hour: "DD/MM HH:mm",
+									day: "DD/MM",
+									week: "DD/MM",
+									month: "MMM YY",
+								}
+							},
+							gridLines: {
+		      			color: "#999",
+								drawOnChartArea: false,
+		  				}
+						}]
+					}
 				}
+			});
+			
+			if (this.config.maxChartWidth != 0) {
+				chart.canvas.style.width = this.config.maxChartWidth + 'px';
+				chartWrapper.style.width = this.config.maxChartWidth + 'px';
 			}
-		});
-		
-		var styleString = '';
-		if (this.config.maxChartWidth != 0) {
-			styleString += 'width: ' + this.config.maxChartWidth + 'px;';
-		}
-		if (this.config.maxChartHeight != 0) {
-			styleString += 'height: ' + this.config.maxChartHeight + 'px;';
-		}
-		if (styleString != '') {
-			history.style = styleString; Log.error(styleString);
-		}
+			if (this.config.maxChartHeight != 0) {
+				chart.canvas.style.height = this.config.maxChartHeight + 'px';
+				chartWrapper.style.height = this.config.maxChartHeight + 'px';
+			}
 
-		wrapper.appendChild(history);
+			chartWrapper.appendChild(history);
+			wrapper.appendChild(chartWrapper);
+
+			for(let i = 0; i < this.config.alertTable.length; i++) {
+				chart.data.datasets.push({
+					label: this.config.alertTable[i].title,
+					data: this.referenceData[i],
+					borderColor: this.config.alertTable[i].color,
+					borderWidth: 2,
+					borderDash: [10, 10],
+					fill: true,
+					pointRadius: 0
+				});
+			 	chart.update();
+			}
+		}
 
 		return wrapper;
 	},
@@ -234,7 +263,7 @@ Module.register("MMM-VigiCrues",{
 			return;
 		}
 
-		var url = this.config.apiBase + "/" + this.config.hydroEndpoint + this.getParams(); Log.error(url);
+		var url = this.config.apiBase + "/" + this.config.hydroEndpoint + this.getParams();
 		var self = this;
 		var retry = true;
 
@@ -268,15 +297,27 @@ Module.register("MMM-VigiCrues",{
 			return;
 		}
 
+		this.config.alertTable.sort((a, b) => Number(a.value) - Number(b.value));
+
 		this.levelCurrent = this.roundValue(data.data[0].resultat_obs / 1000, 2);
 
 		this.levelValues = [];
 		this.chartData = [];
+		this.referenceData = [];
+		for (let j = 0; j < this.config.alertTable.length; j++) {
+			this.referenceData[j] = [];
+			if(data.data[0].resultat_obs >= this.config.alertTable[j].value) {
+				this.alertColor = this.config.alertTable[j].color;
+			}
+		}
 		for (let i = 0; i < data.data.length; i++) {
 			this.levelValues.push(parseInt(data.data[i].resultat_obs));
 
-			if(i < (this.config.dataPeriod / this.config.dataInterval)) {
+			if(i < Math.round(this.config.dataPeriod / this.config.dataInterval)) {
 				this.chartData.push({"t": data.data[i].date_obs, "y": this.roundValue(data.data[i].resultat_obs / 1000, 2)});
+				for (let j = 0; j < this.config.alertTable.length; j++) {
+					this.referenceData[j].push({"t": data.data[i].date_obs, "y": this.roundValue(this.config.alertTable[j].value / 1000, 2)});
+				}
 			}
 		}
 
@@ -285,7 +326,7 @@ Module.register("MMM-VigiCrues",{
 		this.minimum = this.roundValue(Math.min(...this.levelValues) / 1000, 2);
 		this.maximum = this.roundValue(Math.max(...this.levelValues) / 1000, 2);
 
-		this.comparison = this.roundValue((data.data[0].resultat_obs - data.data[this.config.comparisonPeriod / this.config.dataInterval].resultat_obs) / 1000, 1);	
+		this.comparison = this.roundValue((data.data[0].resultat_obs - data.data[this.config.comparisonPeriod / this.config.dataInterval].resultat_obs) / 1000, 1);
 
 		this.loaded = true;
 		this.updateDom(this.config.animationSpeed);
@@ -306,7 +347,7 @@ Module.register("MMM-VigiCrues",{
 
 	
 	getParams: function() {
-		var params = "?";
+		let params = "?";
 
 		params += "code_entite=" + this.config.stationid;
 		params += "&timestep=" + this.config.dataInterval;
@@ -319,7 +360,12 @@ Module.register("MMM-VigiCrues",{
 
 	// Round a value to n decimal
 	roundValue: function(value, decimals) {
-		return parseFloat(value).toFixed(decimals);
+		let round = parseFloat(value).toFixed(decimals);
+		if(round == 0) {
+			round = parseFloat(0).toFixed(decimals);
+		}
+
+		return round;
 	}
 
 });

@@ -1,13 +1,13 @@
 # Module: MMM-VigiCrues
-This module displays the last valeu of water level at a station in the Vigicrues network in France, including chart and statistical information (minimum, average, maximum).
+This module displays the last value of water level at a station in the Vigicrues network in France, including chart and statistical information (minimum, average, maximum).
 
-The max-height and max-width of the chart can be fixed. The amplitude and interval of the graph data and the age of the data used to determine the level assessment can also be fixed. Color Legend display may be enabled or disabled.
+The max-height and max-width of the chart can be fixed. The amplitude and interval of the graph data and the age of the data used to determine the level assessment can also be fixed. Color Legend and chart display may be enabled or disabled independently.
 
-<!--<p align="left">
-<img alt="MMM-VigiCrues Screenshot #1" src="MMM-VigiCrues_screenshot1.png" height="250px">
-<img alt="MMM-VigiCrues Screenshot #2" src="MMM-VigiCrues_screenshot2.png" height="250px">
-<img alt="MMM-VigiCrues Screenshot #3" src="MMM-VigiCrues_screenshot3.png" height="250px">
-</p>-->
+<p align="left">
+<img alt="MMM-VigiCrues Screenshot #1" src="MMM-VigiCrues_screenshot1.png" height="200px">
+<img alt="MMM-VigiCrues Screenshot #2" src="MMM-VigiCrues_screenshot2.png" height="73px">
+<img alt="MMM-VigiCrues Screenshot #3" src="MMM-VigiCrues_screenshot3.png" height="200px">
+</p>
 
 [MagicMirror Project on Github](https://github.com/MichMich/MagicMirror) | [Vigicrues](https://www.vigicrues.gouv.fr/)
 
@@ -69,14 +69,29 @@ The following properties can be configured:
 | `maxChartWidth`              | Maximum width for chart display. If set to 0, the chart's default width is used. (Pixels) <br><br> **Possible values:**`0` - `5000` <br> **Default value:** `0` (default width)
 | `maxChartHeight`             | Maximum height for chart display. If set to 0, the chart's default height is used. (Pixels) <br><br> **Possible values:**`0` - `5000` <br> **Default value:** `0` (default height)
 | `useColorLegend`             | Use the colored icons. <br><br> **Possible values:** `true` or `false` <br> **Default value:** `true`
+| `showChart`             		 | Show the chart. <br><br> **Possible values:** `true` or `false` <br> **Default value:** `true`
+| `alertTable`             		 | Your alerts (water level, title, colour). <br><br> **Possible values:** view details below <br> **Default value:** `[]`
 | `initialLoadDelay`           | The initial delay before loading. If you have multiple modules that use the same API key, you might want to delay one of the requests. (Milliseconds) <br><br> **Possible values:** `1000` - `5000` <br> **Default value:**  `0`
 | `retryDelay`                 | The delay before retrying after a request failure. (Milliseconds) <br><br> **Possible values:** `1000` - `60000` <br> **Default value:**  `2500`
 | `apiBase`                    | The Hub'Eau API base URL. <br><br> **Default value:**  `'https://hubeau.eaufrance.fr'`
 | `hydroEndpoint`              | The Hydrometry API endPoint. <br><br> **Default value:**  `'api/v1/hydrometrie/observations_tr'`
 
-### Todo
+### Alert Table
+
+With `alertTable` , you can create your own alerts based on water level. This information will be added on the chart and an alert will be displayed if the current water level exceeds the water level corresponding to the alert.
+
+You can create one or more alerts within the following structure :
+
+```sh
+alertTable: [
+	{ "value": 5430, "title": "Flood 2017", "color": "red" }, // Alert set to 5430 mm displayed in red with the title "Flood 2017"
+	{ "value": 3120, "title": "Flood 2014", "color": "orange" }, // Alert set to 3120 mm displayed in orange with the title "Flood 2014"
+]
+```
+
+## Todo
 
 
-### License
+## License
 
 This module is licensed under the MIT License
