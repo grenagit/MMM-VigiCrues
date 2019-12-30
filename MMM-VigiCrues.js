@@ -180,7 +180,7 @@ Module.register("MMM-VigiCrues",{
 					]
 				},
 				options: {
-					maintainAspectRatio: false,
+					aspectRatio: 1,
 					legend: {
 						display: true,
 						position: "bottom",
@@ -226,12 +226,14 @@ Module.register("MMM-VigiCrues",{
 					}
 				}
 			});
-			
+		
 			if (this.config.maxChartWidth != 0) {
+				chart.options.maintainAspectRatio = false;
 				chart.canvas.style.width = this.config.maxChartWidth + 'px';
 				chartWrapper.style.width = this.config.maxChartWidth + 'px';
 			}
 			if (this.config.maxChartHeight != 0) {
+				chart.options.maintainAspectRatio = false;
 				chart.canvas.style.height = this.config.maxChartHeight + 'px';
 				chartWrapper.style.height = this.config.maxChartHeight + 'px';
 			}
