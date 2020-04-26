@@ -20,8 +20,10 @@ Module.register("MMM-VigiCrues",{
 		animationSpeed: 1000, // 1 second
 		maxChartWidth: 0,
 		maxChartHeight: 0,
+		beginAtZero: true,
 		useColorLegend: true,
 		showChart: true,
+		showChartBackground: true,
 
 		alertTable: [],
 
@@ -32,7 +34,7 @@ Module.register("MMM-VigiCrues",{
 		hydroEndpoint: "api/v1/hydrometrie/observations_tr",
 	},
 
-	// Define required scripts.
+	// Define required scripts
 	getScripts: function() {
 		return ["Chart.min.js"];
 	},
@@ -170,11 +172,11 @@ Module.register("MMM-VigiCrues",{
 					datasets: [
 						{
 							label: "Hauteur d'eau",
-						  data: this.chartData,
+							data: this.chartData,
 							backgroundColor: "#666",
 							borderColor: "#999",
 							borderWidth: 2,
-						  fill: true,
+							fill: this.config.showChartBackground,
 							pointRadius: 0,
 						}
 					]
@@ -189,8 +191,8 @@ Module.register("MMM-VigiCrues",{
 						yAxes: [{
 							display: true,
 							ticks: {
+								beginAtZero: this.config.beginAtZero,
 								maxTicksLimit: 6,
-								min: 0,
 								padding: 5,
 							},
 							scaleLabel: {
@@ -198,14 +200,13 @@ Module.register("MMM-VigiCrues",{
 								labelString: "Hauteur (m)",
 							},
 							gridLines: {
-		      			color: "#999",
+								color: "#999",
 								drawOnChartArea: false,
-		  				}
+							}
 						}],
 						xAxes: [{
 							display: true,
-		          type: 'time',
-
+							type: 'time',
 							ticks: {
 								maxTicksLimit: 6,
 								padding: 5,
@@ -219,14 +220,14 @@ Module.register("MMM-VigiCrues",{
 								}
 							},
 							gridLines: {
-		      			color: "#999",
+								color: "#999",
 								drawOnChartArea: false,
-		  				}
+							}
 						}]
 					}
 				}
 			});
-		
+
 			if (this.config.maxChartWidth != 0) {
 				chart.options.maintainAspectRatio = false;
 				chart.canvas.style.width = this.config.maxChartWidth + 'px';
@@ -251,14 +252,14 @@ Module.register("MMM-VigiCrues",{
 					fill: true,
 					pointRadius: 0
 				});
-			 	chart.update();
+				chart.update();
 			}
 		}
 
 		return wrapper;
 	},
 
-	// Request new data from api.nasa.gov
+	// Request new data from hubeau.eaufrance.fr
 	updateHydro: function() {
 		if (this.config.appid === "") {
 			Log.error(this.name + ": APPID not set.");

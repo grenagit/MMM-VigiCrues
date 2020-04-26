@@ -68,8 +68,10 @@ The following properties can be configured:
 | `animationSpeed`             | Speed of the update animation. (Milliseconds) <br><br> **Possible values:**`0` - `5000` <br> **Default value:** `1000` (1 second)
 | `maxChartWidth`              | Maximum width for chart display. If set to 0, the chart's default width is used. (Pixels) <br><br> **Possible values:**`0` - `5000` <br> **Default value:** `0` (default width)
 | `maxChartHeight`             | Maximum height for chart display. If set to 0, the chart's default height is used. (Pixels) <br><br> **Possible values:**`0` - `5000` <br> **Default value:** `0` (default height)
+| `beginAtZero`                | The water level axis will begin at 0. <br><br> **Possible values:** `true` or `false` <br> **Default value:** `true`
 | `useColorLegend`             | Use the colored icons. <br><br> **Possible values:** `true` or `false` <br> **Default value:** `true`
 | `showChart`             		 | Show the chart. <br><br> **Possible values:** `true` or `false` <br> **Default value:** `true`
+| `showChartBackground`        | Show the chart background. <br><br> **Possible values:** `true` or `false` <br> **Default value:** `true`
 | `alertTable`             		 | Your alerts (water level, title, colour). <br><br> **Possible values:** view details below <br> **Default value:** `[]`
 | `initialLoadDelay`           | The initial delay before loading. If you have multiple modules that use the same API key, you might want to delay one of the requests. (Milliseconds) <br><br> **Possible values:** `1000` - `5000` <br> **Default value:**  `0`
 | `retryDelay`                 | The delay before retrying after a request failure. (Milliseconds) <br><br> **Possible values:** `1000` - `60000` <br> **Default value:**  `2500`
@@ -78,11 +80,11 @@ The following properties can be configured:
 
 ### Alert Table
 
-With `alertTable` , you can create your own alerts based on water level. This information will be added on the chart and an alert will be displayed if the current water level exceeds the water level corresponding to the alert.
+With `alertTable`, you can create your own alerts based on water level. This information will be added on the chart and an alert will be displayed if the current water level exceeds the water level corresponding to the alert.
 
 You can create one or more alerts within the following structure :
 
-```sh
+```javascript
 alertTable: [
 	{ "value": 5430, "title": "Flood 2017", "color": "red" }, // Alert set to 5430 mm displayed in red with the title "Flood 2017"
 	{ "value": 3120, "title": "Flood 2014", "color": "orange" }, // Alert set to 3120 mm displayed in orange with the title "Flood 2014"
