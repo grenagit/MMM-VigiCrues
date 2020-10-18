@@ -25,6 +25,12 @@ Module.register("MMM-VigiCrues",{
 		showChart: true,
 		showChartBackground: true,
 
+		colorLine: "#999",
+		colorBackground: "#666",
+		colorLegend: "#666",
+		colorTick: "#666",
+		colorLabel: "#666",
+
 		alertTable: [],
 
 		initialLoadDelay: 0, // 0 seconds delay
@@ -173,8 +179,8 @@ Module.register("MMM-VigiCrues",{
 						{
 							label: "Hauteur d'eau",
 							data: this.chartData,
-							backgroundColor: "#666",
-							borderColor: "#999",
+							backgroundColor: this.config.colorBackground,
+							borderColor: this.config.colorLine,
 							borderWidth: 2,
 							fill: this.config.showChartBackground,
 							pointRadius: 0,
@@ -186,6 +192,9 @@ Module.register("MMM-VigiCrues",{
 					legend: {
 						display: true,
 						position: "bottom",
+						labels: {
+							fontColor: this.config.colorLegend,
+						}
 					},
 					scales: {
 						yAxes: [{
@@ -194,13 +203,15 @@ Module.register("MMM-VigiCrues",{
 								beginAtZero: this.config.beginAtZero,
 								maxTicksLimit: 6,
 								padding: 5,
+								fontColor: this.config.colorTick,
 							},
 							scaleLabel: {
 								display: true,
 								labelString: "Hauteur (m)",
+								fontColor: this.config.colorLabel,
 							},
 							gridLines: {
-								color: "#999",
+								color: this.config.colorLine,
 								drawOnChartArea: false,
 							}
 						}],
@@ -210,6 +221,7 @@ Module.register("MMM-VigiCrues",{
 							ticks: {
 								maxTicksLimit: 6,
 								padding: 5,
+								fontColor: this.config.colorTick,
 							},
 							time: {
 								displayFormats: {
@@ -220,7 +232,7 @@ Module.register("MMM-VigiCrues",{
 								}
 							},
 							gridLines: {
-								color: "#999",
+								color: this.config.colorLine,
 								drawOnChartArea: false,
 							}
 						}]

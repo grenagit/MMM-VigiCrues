@@ -1,7 +1,7 @@
 # Module: MMM-VigiCrues
 This module displays the last value of water level at a station in the Vigicrues network in France, including chart and statistical information (minimum, average, maximum).
 
-The max-height and max-width of the chart can be fixed. The amplitude and interval of the graph data and the age of the data used to determine the level assessment can also be fixed. Color Legend and chart display may be enabled or disabled independently.
+The max-height and max-width of the chart can be fixed. The amplitude and interval of the graph data and the age of the data used to determine the level assessment can also be fixed. Color Legend and chart display may be enabled or disabled independently. The color of the graphic elements can be customized.
 
 <p align="left">
 <img alt="MMM-VigiCrues Screenshot #1" src="MMM-VigiCrues_screenshot1.png" height="200px">
@@ -61,7 +61,7 @@ The following properties can be configured:
 | Option                       | Description
 | ---------------------------- | -----------
 | `stationid`                  | The station identifer, which can be obtained on [Vigicrues](https://www.vigicrues.gouv.fr) portal (tab *Info Station*). <br><br>  This value is **REQUIRED**
-| `dataPeriod`            		 | How often does the content needs to be fetched? (Minutes) <br><br> **Possible values:** `30` - `43200` <br> **Default value:** `3 * 24 * 60` (3 days)
+| `dataPeriod`                 | How often does the content needs to be fetched? (Minutes) <br><br> **Possible values:** `30` - `43200` <br> **Default value:** `3 * 24 * 60` (3 days)
 | `dataInterval`               | How often does the content needs to be fetched? (Minutes) <br><br> **Possible values:** `10` - `60` <br> **Default value:** `60` (1 hour)
 | `comparisonPeriod`           | How often does the content needs to be fetched? (Minutes) <br><br> **Possible values:** `10` - `43200` <br> **Default value:** `2 * 60` (2 hours past)
 | `updateInterval`             | How often does the content needs to be fetched? (Milliseconds) <br><br> **Possible values:** `1000` - `86400000` <br> **Default value:** `1 * 60 * 60 * 1000` (1 hour)
@@ -70,9 +70,14 @@ The following properties can be configured:
 | `maxChartHeight`             | Maximum height for chart display. If set to 0, the chart's default height is used. (Pixels) <br><br> **Possible values:**`0` - `5000` <br> **Default value:** `0` (default height)
 | `beginAtZero`                | The water level axis will begin at 0. <br><br> **Possible values:** `true` or `false` <br> **Default value:** `true`
 | `useColorLegend`             | Use the colored icons. <br><br> **Possible values:** `true` or `false` <br> **Default value:** `true`
-| `showChart`             		 | Show the chart. <br><br> **Possible values:** `true` or `false` <br> **Default value:** `true`
+| `showChart`                  | Show the chart. <br><br> **Possible values:** `true` or `false` <br> **Default value:** `true`
 | `showChartBackground`        | Show the chart background. <br><br> **Possible values:** `true` or `false` <br> **Default value:** `true`
-| `alertTable`             		 | Your alerts (water level, title, colour). <br><br> **Possible values:** view details below <br> **Default value:** `[]`
+| `colorLine`                  | Color of the line and grid lines.<br><br> **Possible values:** `'#000000'` - `'#ffffff'` <br> **Default value:** `'#999'`
+| `colorBackground`            | Color of the background (below the line).<br><br> **Possible values:** `'#000000'` - `'#ffffff'` <br> **Default value:** `'#666'`
+| `colorLegend`                | Color of legend text.<br><br> **Possible values:** `'#000000'` - `'#ffffff'` <br> **Default value:** `'#666'`
+| `colorTick`                  | Color of tick labels.<br><br> **Possible values:** `'#000000'` - `'#ffffff'` <br> **Default value:** `'#666'`
+| `colorLabel`                 | Color of scale title.<br><br> **Possible values:** `'#000000'` - `'#ffffff'` <br> **Default value:** `'#666'`
+| `alertTable`                 | Your alerts (water level, title, colour). <br><br> **Possible values:** view details below <br> **Default value:** `[]`
 | `initialLoadDelay`           | The initial delay before loading. If you have multiple modules that use the same API key, you might want to delay one of the requests. (Milliseconds) <br><br> **Possible values:** `1000` - `5000` <br> **Default value:**  `0`
 | `retryDelay`                 | The delay before retrying after a request failure. (Milliseconds) <br><br> **Possible values:** `1000` - `60000` <br> **Default value:**  `2500`
 | `apiBase`                    | The Hub'Eau API base URL. <br><br> **Default value:**  `'https://hubeau.eaufrance.fr'`
