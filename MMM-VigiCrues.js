@@ -42,7 +42,7 @@ Module.register("MMM-VigiCrues",{
 
 	// Define required scripts
 	getScripts: function() {
-		return ["Chart.min.js"];
+		return ["Chart.min.js", "moment.js"];
 	},
 
 	// Define required scripts
@@ -54,7 +54,7 @@ Module.register("MMM-VigiCrues",{
 	start: function() {
 		Log.info("Starting module: " + this.name);
 
-		moment.locale(config.language);
+		moment.updateLocale(config.language);
 
 		this.levelCurrent = null;
 		this.alertColor = null;
@@ -313,6 +313,7 @@ Module.register("MMM-VigiCrues",{
 		}
 
 		this.config.alertTable.sort((a, b) => Number(a.value) - Number(b.value));
+		data.data.sort((a, b) => moment(a.date_obs).diff(moment(b.date_obs)));
 
 		this.levelCurrent = this.roundValue(data.data[0].resultat_obs / 1000, 2);
 
