@@ -313,7 +313,7 @@ Module.register("MMM-VigiCrues",{
 		}
 
 		this.config.alertTable.sort((a, b) => Number(a.value) - Number(b.value));
-		data.data.sort((a, b) => moment(a.date_obs).diff(moment(b.date_obs)));
+		data.data.sort((a, b) => moment(b.date_obs).diff(moment(a.date_obs)));
 
 		this.levelCurrent = this.roundValue(data.data[0].resultat_obs / 1000, 2);
 
