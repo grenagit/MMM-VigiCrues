@@ -34,7 +34,6 @@ Module.register("MMM-VigiCrues",{
 		alertTable: [],
 
 		initialLoadDelay: 0, // 0 seconds delay
-		retryDelay: 2500, // 2,5 seconds
 
 		apiBase: "https://hubeau.eaufrance.fr",
 		hydroEndpoint: "api/v1/hydrometrie/observations_tr",
@@ -42,7 +41,7 @@ Module.register("MMM-VigiCrues",{
 
 	// Define required scripts
 	getScripts: function() {
-		return ["Chart.min.js"];
+		return ["Chart.min.js", "moment.js"];
 	},
 
 	// Define required scripts
@@ -54,7 +53,7 @@ Module.register("MMM-VigiCrues",{
 	start: function() {
 		Log.info("Starting module: " + this.name);
 
-		moment.locale(config.language);
+		moment.updateLocale(config.language);
 
 		this.levelCurrent = null;
 		this.alertColor = null;
@@ -63,6 +62,7 @@ Module.register("MMM-VigiCrues",{
 		this.maximum = null;
 		this.comparison = null;
 
+		this.errored = false;
 		this.loaded = false;
 		this.scheduleUpdate(this.config.initialLoadDelay);
 	},
@@ -71,13 +71,19 @@ Module.register("MMM-VigiCrues",{
 	getDom: function() {
 		var wrapper = document.createElement("div");
 
-		if (this.config.stationid === "") {
+		if(this.config.stationid === "") {
 			wrapper.innerHTML = "Please set the correct station <i>appid</i> in the config for module: " + this.name + ".";
 			wrapper.className = "dimmed light small";
 			return wrapper;
 		}
+		
+		if(this.errored) {
+			wrapper.innerHTML = "Erreur : Plateforme Hydro inaccessible.";
+			wrapper.className = "dimmed light small";
+			return wrapper;
+		}
 
-		if (!this.loaded) {
+		if(!this.loaded) {
 			wrapper.innerHTML = this.translate("LOADING");
 			wrapper.className = "dimmed light small";
 			return wrapper;
@@ -88,7 +94,7 @@ Module.register("MMM-VigiCrues",{
 
 		var levelIcon = document.createElement('span');
 
-		if (this.config.useColorLegend && this.alertColor != null) {
+		if(this.config.useColorLegend && this.alertColor != null) {
 			levelIcon.className = "fas fa-exclamation-triangle dimmed";
 			levelIcon.style = "color: " + this.alertColor + ";";
 		} else {
@@ -110,13 +116,13 @@ Module.register("MMM-VigiCrues",{
 		medium.appendChild(spacer);
 
 		var comparisonIcon = document.createElement('span');
-		if (this.comparison > 0) {
+		if(this.comparison > 0) {
 			comparisonIcon.className = "fas fa-sort-up dimmed";
-			if (this.config.useColorLegend) { comparisonIcon.style = "color: red;" };
+			if(this.config.useColorLegend) { comparisonIcon.style = "color: red;" };
 			this.comparison = "+" + this.comparison;
-		} else if (this.comparison < 0) {
+		} else if(this.comparison < 0) {
 			comparisonIcon.className = "fas fa-sort-down dimmed";
-			if (this.config.useColorLegend) { comparisonIcon.style = "color: green;" };
+			if(this.config.useColorLegend) { comparisonIcon.style = "color: green;" };
 		} else {
 			comparisonIcon.className = "fas fa-sort dimmed";
 		}
@@ -240,12 +246,12 @@ Module.register("MMM-VigiCrues",{
 				}
 			});
 
-			if (this.config.maxChartWidth != 0) {
+			if(this.config.maxChartWidth != 0) {
 				chart.options.maintainAspectRatio = false;
 				chart.canvas.style.width = this.config.maxChartWidth + 'px';
 				chartWrapper.style.width = this.config.maxChartWidth + 'px';
 			}
-			if (this.config.maxChartHeight != 0) {
+			if(this.config.maxChartHeight != 0) {
 				chart.options.maintainAspectRatio = false;
 				chart.canvas.style.height = this.config.maxChartHeight + 'px';
 				chartWrapper.style.height = this.config.maxChartHeight + 'px';
@@ -273,32 +279,30 @@ Module.register("MMM-VigiCrues",{
 
 	// Request new data from hubeau.eaufrance.fr
 	updateHydro: function() {
-		if (this.config.appid === "") {
+		if(this.config.appid === "") {
 			Log.error(this.name + ": APPID not set.");
 			return;
 		}
 
 		var url = this.config.apiBase + "/" + this.config.hydroEndpoint + this.getParams();
 		var self = this;
-		var retry = true;
+		this.errored = false;
 
 		var hydroRequest = new XMLHttpRequest();
 		hydroRequest.open("GET", url, true);
 		hydroRequest.onreadystatechange = function() {
-			if (this.readyState === 4) {
-				if (this.status === 200) {
+			if(this.readyState === 4) {
+				if(this.status === 200) {
 					self.processHydro(JSON.parse(this.response));
-				} else if (this.status === 401) {
+				} else if(this.status === 401) {
 					self.updateDom(self.config.animationSpeed);
 
 					Log.error(self.name + ": Incorrect APPID.");
-					retry = true;
 				} else {
-					Log.error(self.name + ": Could not load Hydro.");
-				}
-
-				if (retry) {
-					self.scheduleUpdate((self.loaded) ? -1 : self.config.retryDelay);
+					self.errored = true;
+					self.updateDom(self.config.animationSpeed);
+					
+					Log.error(self.name + ": Could not load data from Hydro platform.");
 				}
 			}
 		};
@@ -307,30 +311,31 @@ Module.register("MMM-VigiCrues",{
 
 	// Use the received data to set the various values before update DOM
 	processHydro: function(data) {
-		if (!data || typeof data.data === "undefined") {
+		if(!data || typeof data.data === "undefined") {
 			Log.error(this.name + ": Do not receive usable data.");
 			return;
 		}
 
 		this.config.alertTable.sort((a, b) => Number(a.value) - Number(b.value));
+		data.data.sort((a, b) => moment(b.date_obs).diff(moment(a.date_obs)));
 
 		this.levelCurrent = this.roundValue(data.data[0].resultat_obs / 1000, 2);
 
 		this.levelValues = [];
 		this.chartData = [];
 		this.referenceData = [];
-		for (let j = 0; j < this.config.alertTable.length; j++) {
+		for(let j = 0; j < this.config.alertTable.length; j++) {
 			this.referenceData[j] = [];
 			if(data.data[0].resultat_obs >= this.config.alertTable[j].value) {
 				this.alertColor = this.config.alertTable[j].color;
 			}
 		}
-		for (let i = 0; i < data.data.length; i++) {
+		for(let i = 0; i < data.data.length; i++) {
 			this.levelValues.push(parseInt(data.data[i].resultat_obs));
 
 			if(i < Math.round(this.config.dataPeriod / this.config.dataInterval)) {
 				this.chartData.push({"t": data.data[i].date_obs, "y": this.roundValue(data.data[i].resultat_obs / 1000, 2)});
-				for (let j = 0; j < this.config.alertTable.length; j++) {
+				for(let j = 0; j < this.config.alertTable.length; j++) {
 					this.referenceData[j].push({"t": data.data[i].date_obs, "y": this.roundValue(this.config.alertTable[j].value / 1000, 2)});
 				}
 			}
@@ -350,7 +355,7 @@ Module.register("MMM-VigiCrues",{
 	// Schedule next update
 	scheduleUpdate: function(delay) {
 		var nextLoad = this.config.updateInterval;
-		if (typeof delay !== "undefined" && delay >= 0) {
+		if(typeof delay !== "undefined" && delay >= 0) {
 			nextLoad = delay;
 		}
 

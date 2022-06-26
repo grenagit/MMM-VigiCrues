@@ -79,7 +79,6 @@ The following properties can be configured:
 | `colorLabel`                 | Color of scale title.<br><br> **Possible values:** `'#000000'` - `'#ffffff'` <br> **Default value:** `'#666'`
 | `alertTable`                 | Your alerts (water level, title, colour). <br><br> **Possible values:** view details below <br> **Default value:** `[]`
 | `initialLoadDelay`           | The initial delay before loading. If you have multiple modules that use the same API key, you might want to delay one of the requests. (Milliseconds) <br><br> **Possible values:** `1000` - `5000` <br> **Default value:**  `0`
-| `retryDelay`                 | The delay before retrying after a request failure. (Milliseconds) <br><br> **Possible values:** `1000` - `60000` <br> **Default value:**  `2500`
 | `apiBase`                    | The Hub'Eau API base URL. <br><br> **Default value:**  `'https://hubeau.eaufrance.fr'`
 | `hydroEndpoint`              | The Hydrometry API endPoint. <br><br> **Default value:**  `'api/v1/hydrometrie/observations_tr'`
 
