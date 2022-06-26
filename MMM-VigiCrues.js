@@ -35,8 +35,8 @@ Module.register("MMM-VigiCrues",{
 
 		initialLoadDelay: 0, // 0 seconds delay
 
-		apiBase: "https://hubeau.eaufrance.fr",
-		hydroEndpoint: "api/v1/hydrometrie/observations_tr",
+		apiBase: "https://www.vigicrues.gouv.fr/",
+		hydroEndpoint: "services/observations.json/",
 	},
 
 	// Define required scripts
@@ -78,7 +78,7 @@ Module.register("MMM-VigiCrues",{
 		}
 		
 		if(this.errored) {
-			wrapper.innerHTML = "Erreur : Plateforme Hydro inaccessible.";
+			wrapper.innerHTML = "Erreur : Plateforme Vigicrues inaccessible.";
 			wrapper.className = "dimmed light small";
 			return wrapper;
 		}
@@ -277,7 +277,7 @@ Module.register("MMM-VigiCrues",{
 		return wrapper;
 	},
 
-	// Request new data from hubeau.eaufrance.fr
+	// Request new data from vigicrues.gouv.fr
 	updateHydro: function() {
 		if(this.config.appid === "") {
 			Log.error(this.name + ": APPID not set.");
@@ -302,7 +302,7 @@ Module.register("MMM-VigiCrues",{
 					self.errored = true;
 					self.updateDom(self.config.animationSpeed);
 					
-					Log.error(self.name + ": Could not load data from Hydro platform.");
+					Log.error(self.name + ": Could not load data from Vigicrues API.");
 				}
 			}
 		};
@@ -311,42 +311,42 @@ Module.register("MMM-VigiCrues",{
 
 	// Use the received data to set the various values before update DOM
 	processHydro: function(data) {
-		if(!data || typeof data.data === "undefined") {
+		if(!data || typeof data.Serie === "undefined") {
 			Log.error(this.name + ": Do not receive usable data.");
 			return;
 		}
 
 		this.config.alertTable.sort((a, b) => Number(a.value) - Number(b.value));
-		data.data.sort((a, b) => moment(b.date_obs).diff(moment(a.date_obs)));
+		data.Serie.ObssHydro.sort((a, b) => moment(b.DtObsHydro).diff(moment(a.DtObsHydro)));
 
-		this.levelCurrent = this.roundValue(data.data[0].resultat_obs / 1000, 2);
+		this.levelCurrent = this.roundValue(data.Serie.ObssHydro[0].ResObsHydro, 2);
 
 		this.levelValues = [];
 		this.chartData = [];
 		this.referenceData = [];
 		for(let j = 0; j < this.config.alertTable.length; j++) {
 			this.referenceData[j] = [];
-			if(data.data[0].resultat_obs >= this.config.alertTable[j].value) {
+			if(data.Serie.ObssHydro[0].ResObsHydro >= (this.config.alertTable[j].value / 1000)) {
 				this.alertColor = this.config.alertTable[j].color;
 			}
 		}
-		for(let i = 0; i < data.data.length; i++) {
-			this.levelValues.push(parseInt(data.data[i].resultat_obs));
+		for(let i = 0; i < data.Serie.ObssHydro.length; i++) {
+			this.levelValues.push(parseFloat(data.Serie.ObssHydro[i].ResObsHydro));
 
 			if(i < Math.round(this.config.dataPeriod / this.config.dataInterval)) {
-				this.chartData.push({"t": data.data[i].date_obs, "y": this.roundValue(data.data[i].resultat_obs / 1000, 2)});
+				this.chartData.push({"t": data.Serie.ObssHydro[i].DtObsHydro, "y": this.roundValue(data.Serie.ObssHydro[i].ResObsHydro, 2)});
 				for(let j = 0; j < this.config.alertTable.length; j++) {
-					this.referenceData[j].push({"t": data.data[i].date_obs, "y": this.roundValue(this.config.alertTable[j].value / 1000, 2)});
+					this.referenceData[j].push({"t": data.Serie.ObssHydro[i].DtObsHydro, "y": this.roundValue((this.config.alertTable[j].value / 1000), 2)});
 				}
 			}
 		}
 
-		this.average = this.roundValue((this.levelValues.reduce((a, b) => a + b, 0) / this.levelValues.length) / 1000, 2);
+		this.average = this.roundValue((this.levelValues.reduce((a, b) => a + b, 0) / this.levelValues.length), 2);
 
-		this.minimum = this.roundValue(Math.min(...this.levelValues) / 1000, 2);
-		this.maximum = this.roundValue(Math.max(...this.levelValues) / 1000, 2);
+		this.minimum = this.roundValue(Math.min(...this.levelValues), 2);
+		this.maximum = this.roundValue(Math.max(...this.levelValues), 2);
 
-		this.comparison = this.roundValue((data.data[0].resultat_obs - data.data[this.config.comparisonPeriod / this.config.dataInterval].resultat_obs) / 1000, 1);
+		this.comparison = this.roundValue((data.Serie.ObssHydro[0].ResObsHydro - data.Serie.ObssHydro[this.config.comparisonPeriod / this.config.dataInterval].ResObsHydro), 1);
 
 		this.loaded = true;
 		this.updateDom(this.config.animationSpeed);
@@ -369,11 +369,8 @@ Module.register("MMM-VigiCrues",{
 	getParams: function() {
 		let params = "?";
 
-		params += "code_entite=" + this.config.stationid;
-		params += "&timestep=" + this.config.dataInterval;
-		params += "&pretty";
-		params += "&grandeur_hydro=H";
-		params += "&fields=date_obs,resultat_obs";
+		params += "CdStationHydro=" + this.config.stationid;
+		params += "&FormatDate=iso";
 
 		return params;
 	},
