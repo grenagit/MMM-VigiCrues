@@ -34,7 +34,6 @@ Module.register("MMM-VigiCrues",{
 		alertTable: [],
 
 		initialLoadDelay: 0, // 0 seconds delay
-		retryDelay: 2500, // 2,5 seconds
 
 		apiBase: "https://hubeau.eaufrance.fr",
 		hydroEndpoint: "api/v1/hydrometrie/observations_tr",
@@ -287,7 +286,6 @@ Module.register("MMM-VigiCrues",{
 
 		var url = this.config.apiBase + "/" + this.config.hydroEndpoint + this.getParams();
 		var self = this;
-		var retry = true;
 		this.errored = false;
 
 		var hydroRequest = new XMLHttpRequest();
@@ -300,16 +298,11 @@ Module.register("MMM-VigiCrues",{
 					self.updateDom(self.config.animationSpeed);
 
 					Log.error(self.name + ": Incorrect APPID.");
-					retry = false;
 				} else {
 					self.errored = true;
 					self.updateDom(self.config.animationSpeed);
 					
 					Log.error(self.name + ": Could not load data from Hydro platform.");
-				}
-
-				if(retry) {
-					self.scheduleUpdate((self.loaded) ? -1 : self.config.retryDelay);
 				}
 			}
 		};
